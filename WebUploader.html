@@ -1,0 +1,1144 @@
+<html>
+ <head> 
+  <title>Web Uploader</title> 
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.8.min.js"></script> 
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /> 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> 
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+  <meta http-equiv="Content-Type" content="text/html;  charset=UTF-8" /> 
+  <style>
+    
+
+    .thumbnail > img{
+      width:100%;
+      height:8.5vw;
+    }
+
+    .panel-heading{
+      cursor: pointer;
+    }
+    
+    .thumbnail{
+      cursor: pointer;
+      
+
+    }
+    input{
+      margin: 5px;
+    }
+    form{
+      display:inline;
+    }
+    button{
+      
+    }
+    .table-bordered{
+      background-color: #F5F5F5;
+    }
+    
+    span.file{
+      display : inline-block;
+      padding : 0.5em;
+      margin : 0.5em;
+      border : solid 1px black;
+      border-radius : 6px;
+    }
+    
+    #dropZone{
+      text-align: center;
+      display: inline-block;
+      border : solid gray 1px ;
+      width : 100%;
+      height: 200px;
+      overflow : auto;
+      margin : 0;
+    }
+  
+    #thumburl{
+      
+    }
+    .prompt{
+      
+      font-size:1em;
+      width:10%;
+      display:inline;
+      color:#253d89;
+      font-family:'Verdana';
+      
+    }
+    
+    .thumbrow{
+      width: 100%;
+      margin: auto;
+      
+    }
+
+    .mainLayout{
+      width: 80%;
+      margin-left:40px%;
+    }
+  </style> 
+ </head> 
+ <body> 
+  <div style="white-space:nowrap"> 
+   <div class="container-fluid" style="background-color:rgb(53,53,53);color:rgb(256,128,0); margin-bottom:40px;width:100%;background-repeat: repeat-x;display:inline-block"> 
+    <img style="margin:10px" src="" width="170" height="64" /> 
+    <h1 style="display:inline-block;margin-left: 2%; cursor:default">Web Upload</h1> 
+   </div> 
+   <div class="container mainLayout"> 
+    <div style=""> 
+    </div>
+    <table class="table table-bordered"> 
+     <tbody> 
+     
+      <tr style=""> 
+       <td style="display:none"></td> 
+       <td colspan="2">
+        <div id="dropZone">
+         <h1>Drop files here</h1>
+        </div> </td> 
+      </tr>  
+      <tr> 
+       <td><p class="prompt">Application: </p></td>
+       <td>
+        <div class="dropdown" style="display:inline-block;"> 
+         <button class="btn dropdown-toggle" type="button" data-toggle="dropdown" style="width: 140px"><span id="menuVal">Choose an app</span> <span class="caret" style="float:right;margin-top:5%"></span></button> 
+         <ul class="dropdown-menu"> 
+          <li><a href="#">Canes VR</a></li> 
+          <li><a href="#">LionVision VR</a></li> 
+         </ul> 
+        </div></td>
+      </tr> &nbsp; 
+      <tr> 
+       <td><p class="prompt">Format:</p></td> 
+       <td>
+        <form style="width:10%"> 
+         <label class="radio-inline format"> <input id="2dRad" type="radio" name="optradio" checked="" />2D </label> 
+         <label class="radio-inline format"> <input type="radio" name="optradio" />360 </label> 
+        </form></td> 
+      </tr> 
+      <tr> 
+       <td><p class="prompt">Content Type: </p></td> 
+       <td> 
+        <form style="width:10%"> 
+         <label class="radio-inline contType"> <input id="freeRad" type="radio" name="optradio" checked="" />Free </label> 
+         <label class="radio-inline contType"> <input type="radio" name="optradio" />Premium </label> 
+         <button style=" width:30%;float:right; margin-left:1%;background-color: #253d89;color:white" id="submit" class="btn btn-default">Upload</button> 
+        </form> </td> 
+      </tr> 
+     </tbody> 
+    </table> 
+    <div id="invalid" class="alert alert-danger"> 
+     <a class="close" onclick="$('#invalid').hide()" aria-label="close">&times;</a> 
+     <span id="invmsg">Invalid Input. Please make sure you have a .mp4 file selected. </span> 
+    </div> 
+    <div class="panel-group "> 
+     <!-- Begin panel --> 
+     <div class="panel panel-default " id="results" style="white-space: normal"> 
+      <div class="panel-heading" onclick="$('#collapse1').collapse('toggle')"> 
+       <span class="prompt">Results</span>
+      </div> 
+      <div class="panel-collapse collapse in" id="collapse1"> 
+       <div class="panel-body"> 
+        <br /> 
+        <div id="progress" style="color:#777;text-align:center;"> 
+         <img src="https://www.mygreatlakes.org/mglstatic/educate/images/loading.gif" width="50px" height="50px" style="display:block;margin:auto" />
+         <br /> 
+         <p style="margin:auto;display:inline-block"><span id="placeHolder" style="color:white"></span><span id="jobstatus">Processing</span></p>
+         <!--<p style="display:inline">...<br></p>--> 
+        </div> 
+        <div id="comp" class="alert alert-success" style=""> 
+         <a class="close" onclick="$('#comp').hide()" aria-label="close">&times;</a> Upload Successful! 
+        </div> 
+        <div id="er" class="alert alert-danger" style=""> 
+         <a class="close" onclick="$('#er').hide()" aria-label="close">&times;</a> 
+         <span id="emsg"></span> 
+        </div> 
+        
+        <div id="uploadfailed" class="alert alert-danger" style=""> 
+         <a class="close" onclick="$('#uploadfailed').hide()" aria-label="close">&times;</a> 
+         <span id="upStatus">Upload failed</span> 
+        </div> 
+        
+       </div> 
+      </div> 
+     </div> 
+     <!-- End panel --> 
+     <!-- Begin panel --> 
+     <div class="panel panel-default " id="thumbpanel"> 
+      <div onclick="$('#collapse2').collapse('toggle')" class="panel-heading "> 
+       <span class="prompt">Select one thumbnail:</span>
+      </div> 
+      <div class="panel-collapse collapse in" id="collapse2"> 
+       <div class="panel-body"> 
+        <span id="thumbs"> 
+         <!--<span class="alert alert-info" id="thumburlbox" style="color:#777777;margin-left:50px;margin-right:40%;margin-top: 30px;float:right;" >Thumbnail url: <a href="" style="" id="thumburl"></a><br/><a href="" style="" id="smallthumburl"></a></span><br><br/>--> 
+         <div class="row thumbrow"> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" />
+            <!--style="width:100%;height:100px"--> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+         </div> 
+         <div class="row thumbrow"> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+          <div class="col-xs-3 thumbdiv" style=""> 
+           <a class="thumbnail"> <img src="https://nrm.dfg.ca.gov/images/image-loader.gif" /> </a> 
+          </div> 
+         </div> </span> 
+       </div> 
+      </div> 
+     </div> 
+     <!-- End panel --> 
+     <!--Begin Panel--> 
+     <div class="panel panel-default" id="urls" style="white-space: normal"> 
+      <div class="panel-heading" onclick="$('#collapse3').collapse('toggle')"> 
+       <span class="prompt">URLs</span>
+      </div> 
+      <div class="panel-collapse collapse in" id="collapse3"> 
+       <div class="panel-body"> 
+        <table class="table  table-hover" style="cursor:pointer"> 
+         <tbody> 
+          <tr onclick="window.document.location='#';"> 
+           <td>Video:</td> 
+           <td style="font-size:.75em"><a href="#">#</a></td> 
+          </tr> 
+          <tr onclick="window.document.location='#';"> 
+           <td>Full Thumbnail:</td> 
+           <td style="font-size:.75em"><a href="#">#</a></td> 
+          </tr> 
+          <tr onclick="window.document.location='#';"> 
+           <td>Small Thumbnail:</td> 
+           <td style="font-size:.75em"><a href="#">#</a></td> 
+          </tr> 
+         </tbody> 
+        </table> 
+       </div> 
+      </div> 
+     </div> 
+     <!-- End panel --> 
+    </div> 
+    <!-- End panel group --> 
+    <button style=" width:30%; margin-bottom:30px;background-color: rgb(256, 128,0);color:white" id="next" class="btn btn-default">Next</button> 
+    <!--<div  id="uploading" class="alert alert-info" style="margin:10">
+  <a   class="close" onclick="$('#uploading').hide()" aria-label="close">&times;</a>
+  Uploading...
+</div>--> 
+    <br /> 
+   </div> 
+  </div> 
+  <script> 
+    //loading image:  https://nrm.dfg.ca.gov/images/image-loader.gif 
+    //blank image: http://assets3.mixbook.com/pages/61357643_783584_l.jpg?1318385442
+
+ 
+
+    function fileObj(f) {
+
+        var self = this;
+        var filename = f.name.split("\\").reverse()[0];
+        self.keyField = filename.split(" ").join("_");
+        self.doneCheckingKey = false;
+        self.keyExists = false;
+        self.trackingID = '';
+        self.appName = '';
+        self.type = '2Dvid';
+        self.contType = 'Free';
+        self.cdn = '';
+        self.thumbKey = '';
+        self.key_str = '';
+        self.key = '';
+        self.duration = -1;
+        self.loaded = 0;
+        self.total = 0.0000001;
+        self.validInput = true;
+
+        var transcode = function() {
+            //console.log('Received event:', JSON.stringify(event, null, 2));
+            // Get the object from the event and show its content type
+            var params;
+            self.thumbKey = self.keyField.substr(0, self.keyField.indexOf('.'));
+            self.key = self.keyField;
+            console.log(self.key);
+            console.log('format: ' + self.type);
+            self.key_str = self.trackingID + '_' + self.appName + '_' + self.type + '_Full';
+            console.log('key_str: ' + self.keyField);
+            if (self.type == "360vid") {
+                params = {
+                    Input: {
+                        Key: self.key
+                    },
+                    PipelineId: '1552338516267-8cairg',
+                    /* test-web-transcoder */
+                    //OutputKeyPrefix: 'transcoder/output/'+key,
+                    OutputKeyPrefix: self.key_str + '_' + 'Output/',
+                    Outputs: [{
+                        // outputKey(basename(key),'ts')
+                        Key: 'preset1' + self.key_str.toString(),
+                        PresetId: '1469727457298-tvvj4l', //4500 bit rate
+                        SegmentDuration: '10' // hls
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset2' + self.key_str.toString(),
+                        PresetId: '1469727780686-y4ko3p', //3700 bit rate
+                        SegmentDuration: '10' // hls
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset3' + self.key_str.toString(),
+                        PresetId: '1469728449436-k7vk28', //3400 bit rate
+                        SegmentDuration: '10' // hls
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset4' + self.key_str.toString(),
+                        PresetId: '1479972026492-sf6bss', //3279 bit rate
+                        SegmentDuration: '10', // hls
+                        ThumbnailPattern: self.thumbKey + '$' + self.trackingID + '_' + self.appName + '_2DImage_Thumbnail_' + '{count}'
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset5' + self.key_str.toString(),
+                        PresetId: '1479970223694-4lljxl', //2175 bit rate
+                        SegmentDuration: '10', // hls
+                        ThumbnailPattern: self.thumbKey + '$' + self.trackingID + '_' + self.appName + '_2DImage_Full_' + '{count}'
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset6' + self.key_str.toString(),
+                        PresetId: '1469729026262-gijmxj', //1719 bit rate
+                        SegmentDuration: '10' // hls
+                    }],
+                    Playlists: [{
+                        Format: 'HLSv3',
+                        Name: 'MASTER_' + self.key_str.toString(),
+                        OutputKeys: [
+                            'preset1' + self.key_str.toString(),
+                            'preset2' + self.key_str.toString(),
+                            'preset3' + self.key_str.toString(),
+                            'preset4' + self.key_str.toString(),
+                            'preset5' + self.key_str.toString(),
+                            'preset6' + self.key_str.toString()
+                        ]
+                    }]
+                };
+            } else if (self.type == "2Dvid") {
+                params = {
+                    Input: {
+                        Key: self.key
+                    },
+                    PipelineId: '1552338516267-8cairg',
+                    /* test-web-transcoder */
+                    //OutputKeyPrefix: 'transcoder/output/'+key,
+                    OutputKeyPrefix: self.key_str + '_' + 'Output/',
+                    Outputs: [{
+                        // outputKey(basename(key),'ts')
+                        Key: 'preset1' + self.key_str.toString(),
+                        PresetId: '1553148068718-fgy31z', //2100 bit rate 2000k (new one)
+                        SegmentDuration: '10', // hls
+                        ThumbnailPattern: self.thumbKey + '$' + self.trackingID + '_' + self.appName + '_2DImage_Full_' + '{count}'
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset2' + self.key_str.toString(),
+                        PresetId: '1553148042677-9ufpvk', //1978 bit rate (1000k new one)
+                        SegmentDuration: '10', // hls
+                        ThumbnailPattern: self.thumbKey + '$' + self.trackingID + '_' + self.appName + '_2DImage_Thumbnail_' + '{count}'
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset3' + self.key_str.toString(),
+                        PresetId: '1553147979660-b1hf3j', //600 bit rate
+                        SegmentDuration: '10' // hls
+                    }, {
+                        //outputKey(basename(key),'ts1')
+                        Key: 'preset4' + self.key_str.toString(),
+                        PresetId: '1553148015120-yiqzap', //464 bit rate
+                        SegmentDuration: '10' // hls
+                    }],
+                    Playlists: [{
+                        Format: 'HLSv3',
+                        Name: 'MASTER_' + self.key_str.toString(),
+                        OutputKeys: [
+                            'preset1' + self.key_str.toString(),
+                            'preset2' + self.key_str.toString(),
+                            'preset3' + self.key_str.toString(),
+                            'preset4' + self.key_str.toString()
+                        ]
+                    }]
+                };
+            }
+            var request = elastictranscoder.createJob(params);
+            request.on('complete', function(response) {
+                console.log(response);
+                var check = setInterval(function() {
+                    var request_ = elastictranscoder.readJob({
+                        Id: response.data.Job.Id
+                    });
+                    request_.on('complete', function(response_) {
+                        var st = response_.data.Job.Status;
+                        console.log(response_);
+                        console.log("st: " + st);
+                        if (st == "Progressing" && fileObjs.length === uploadedCount) {
+
+                            $("#jobstatus").html("Processing...");
+                            $("#placeHolder").html("...");
+                        }
+
+                        if (st == "Error" || st == "Complete" || st == "Canceled") {
+                            if (++transcodedCount === fileObjs.length) {
+                                $("#progress").hide();
+                                $('#next').show();
+                                if (message.indexOf('Error') === -1) {
+                                    $("#comp").show();
+
+                                } else {
+                                    $("#emsg").html(message);
+                                    $("#er").show();
+                                }
+                            }
+
+                            clearInterval(check);
+
+                            self.cdn = "https://<cdn-url-here>.cloudfront.net/" + self.key_str + "_Output/MASTER_" + self.key_str + ".m3u8";
+  
+                            self.duration = response_.data.Job.Output.Duration;
+
+
+                            var outputs = response_.data.Job.Outputs;
+                            if (st == "Error") {
+                                self.validInput = false;
+                                message += st + ": ";
+                                message += response_.data.Job.Playlists[0].StatusDetail.split(":")[1] + ': ' + response_.data.Job.Playlists[0].Name + '<br>';
+
+                                for (var j = 0; j < outputs.length; j++) {
+           
+                                    message += "File format " + (j + 1) + " :";
+                                    console.log(outputs[j]);
+                                    message += outputs[j].StatusDetail.split(":")[1] + ': ' + outputs[j].Key;
+
+                                    message += "<br>";
+                                    //}
+                                }
+                                message += '<br>' + filename + ' could not be processed.';
+
+                            }
+                        }
+
+                    });
+                    request_.send();
+
+                }, 5000);
+            });
+            request.send();
+        };
+
+
+        if (filename && filename.endsWith(".mp4")) {
+            //fileIn.files = files;
+            $("#invalid").hide();
+            var checkKeyParams = {
+                    Bucket: '<input-bucket-name-here>',
+                    MaxKeys: 1,
+                    Prefix: self.keyField
+                },
+
+                checkForKey = s3.listObjects(checkKeyParams);
+
+            checkForKey.on('complete', function(checkRes) {
+
+                self.doneCheckingKey = true;
+                if (checkRes.data.Contents.length !== 0) {
+                    self.keyExists = true;
+                    console.log('key exists: ' + self.keyField);
+                } else {
+                    self.keyExists = false;
+                }
+            });
+            checkForKey.send();
+            self.doneCheckingKey = false;
+
+        } else {
+            $('#invmsg').html('Invalid Input. Please make sure you have only .mp4 files selected.'); // should probably remove this
+            $('#invalid').slideDown('fast');
+            self.validInput = false;
+
+        }
+
+        var updateProgress = function() {
+            var loaded = 0,
+                total = 0;
+            for (var i in fileObjs) {
+                loaded += fileObjs[i].loaded;
+                total += fileObjs[i].total;
+            }
+            //console.log('loaded: ' + loaded + ' total: ' + total);
+
+            $("#jobstatus").html('Uploading ' + Math.ceil(loaded / total * 100) + "%");
+        };
+
+        self.send = function() {
+            s3.upload({
+                ACL: 'private',
+                Body: f,
+                Bucket: '<input-bucket-name-here>',
+                ContentType: 'video/mp4',
+                Key: self.keyField,
+                Metadata: {
+                    appName: self.appName,
+                    format: self.type,
+                    trackingID: self.trackingID
+                }
+
+            }).
+            on('httpUploadProgress', function(e) {
+                self.loaded = e.loaded;
+                self.total = e.total;
+
+
+
+                if (e.loaded === e.total) {
+                    console.log(e.loaded + ' / ' + e.total);
+                    uploadedCount++;
+                    transcode();
+                }
+
+                updateProgress();
+
+            }).send();
+        };
+
+        var del = function(bucket, callback) {
+            var delArr = [],
+                delObjs = [];
+
+            s3.listObjects({
+                Bucket: bucket,
+                MaxKeys: 1000,
+                Prefix: self.trackingID
+            }).
+            on('success', function handlePage(r) {
+                console.log(r);
+                //... handle page of contents r.data.Contents
+                delArr = delArr.concat(r.data.Contents);
+
+                if (r.hasNextPage()) {
+                    // There's another page; handle it
+                    r.nextPage().on('success', handlePage).send();
+                } else {
+                    console.log(delArr);
+                    for (var i in delArr) {
+                        delObjs.push({
+                            Key: delArr[i].Key
+                        });
+                    }
+                    console.log('delObjs:');
+                    console.log(delObjs);
+                    var delReq = s3.deleteObjects({
+                        Bucket: bucket,
+                        Delete: {
+                            Objects: delObjs
+                        }
+                    });
+                    delReq.on('complete', function(r_) {
+                        console.log(r_);
+                        console.log('Streams deleted');
+                        callback();
+                    });
+
+
+                    delReq.send();
+                }
+            }).
+            on('error', function(r) {
+                console.log(r);
+                callback();
+            }).
+            send();
+        };
+
+        self.overwrite = function() {
+
+            s3.headObject({
+                Bucket: '<input-bucket-name-here>',
+                Key: self.keyField
+            }).on('success', function(r) {
+                console.log(r);
+
+                self.type = r.data.Metadata.format || self.type;
+                self.appName = r.data.Metadata.appname || self.appName;
+                self.trackingID = r.data.Metadata.trackingid || self.trackingID;
+
+                //setMeta();
+
+                // using promises for the purpose of running the delete object task on both buckets asynchronously
+                var promises = [
+
+                    new Promise(function(resolve, reject) {
+
+                        if (self.trackingID.startsWith('ID') && self.trackingID.length > 2) { // Making sure we have this variable defined well, otherwise it will delete entire bucket
+                            del('<output-bucket-name-here>', resolve);
+                        } else {
+                            console.log('trackingID undefined');
+                            resolve();
+                        }
+                    }),
+
+                    new Promise(function(resolve, reject) {
+
+                        if (self.trackingID.startsWith('ID') && self.trackingID.length > 2) {
+                            del('<image-output-bucket-here>', resolve);
+                        } else {
+                            console.log('trackingID undefined');
+                            resolve();
+                        }
+                    })
+                ];
+
+                Promise.all(promises).then(function() {
+                    self.send();
+                    console.log('sent');
+                });
+
+            }).
+            on('error', function(r) {
+
+                console.log(r);
+            }).
+            send();
+        };
+
+
+    }
+
+
+    //Lock the api versions so future updates don't break the code
+    AWS.config.apiVersions = {
+        
+        elastictranscoder: '2012-09-25',
+        lambda: '2015-03-31',
+        s3: '2006-03-01'
+      };
+
+
+    $(".alert").hide();
+    $('#next').hide();
+    $("#thumbpanel").hide();
+    $("#urls").hide();
+    $("#results").hide();
+
+    var uploadedCount = 0,
+        transcodedCount = 0,
+        message = '',
+        options = {
+            region: 'us-west-1',
+            accessKeyId: "<access-key-goes-here>",
+            secretAccessKey: "<secret-access-key-goes-here>"
+        },
+
+        elastictranscoder = new AWS.ElasticTranscoder(options),
+        s3 = new AWS.S3(options),
+        lambda = new AWS.Lambda(options),
+        imgChosen = false,
+        allInputsValid = true,
+        application = '',
+        currFile = -1,
+
+        /*fileIn = document.getElementsByName("file")[0],
+        keyField = document.getElementsByName("key")[0].getAttributeNode("value"),
+        form = document.getElementsByTagName("form")[0],*/
+        rows = document.getElementsByTagName("tr"),
+        cells = document.getElementsByTagName("td"),
+        submitB = document.getElementById("submit"),
+        state = document.getElementById("status"),
+        prog = document.getElementById("prog"),
+        dropZone = document.getElementById('dropZone'),
+        fileObjs = [],
+
+        rnd = function(x, p) {
+            var P = Math.pow(10, p);
+            return Math.round(x * P) / P;
+        },
+
+        enableDragging = function(e) {
+            if (e.preventDefault) e.preventDefault();
+            dropZone.innerHTML = "<h1>Drop files here</h1>";
+            return false;
+        },
+
+        setAll = function(property, val) {
+            for (var i = 0; i < fileObjs.length; i++) {
+                fileObjs[i][property] = val;
+            }
+        },
+
+        getErrMsg = function(errCode) {
+            if (("" + errCode)[0] === "5") {
+                return ": Problem with server";
+            } else {
+                switch (errCode) {
+                    case 415:
+                        return ": Unsupported media type";
+                    case 409:
+                        return ": Conflict with upload";
+                    default:
+                        return "";
+
+                }
+            }
+        },
+
+
+        loadThumbs = function(k, dur) {
+            imgChosen = false;
+            $(".thumbnail").attr("style", "opacity:1");
+
+            $(".thumbdiv").css("display", "block");
+
+            var thumbs = document.getElementsByTagName("img"),
+                thumbdl = [new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image(), new Image()], // had this in a loop but it stopped working for some reason so I defined them individually
+                thumbIndex,
+                count = 0,
+                imgLoadCount = 8,
+
+                interval = setInterval(function() {
+
+                    for (var i = 0; i < 8; i++) {
+                        thumbdl[i].src = "https://s3-us-west-1.amazonaws.com/<image-output-bucket-here>/" + k + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Full_' + "0000" + (i + 1) + ".png";
+                    }
+                    if (count++ === 20) {
+                        clearInterval(interval);
+                    }
+                }, 1400);
+
+
+
+            for (var i = 0; i < 8; i++) {
+
+                if (i > dur / 7) {
+                    $(".thumbdiv").get(i).getAttributeNode("style").value = "display:none";
+                    imgLoadCount--;
+                }
+
+
+
+                thumbs[i + 2].getAttributeNode("src").value = "https://nrm.dfg.ca.gov/images/image-loader.gif";
+
+                thumbdl[i].onload = function(e) {
+
+                    if (--imgLoadCount === 0) {
+                        clearInterval(interval);
+                    }
+
+                    thumbIndex = parseInt(this.getAttribute("src").split("").reverse()[4], 10) + 1;
+
+                    thumbs[thumbIndex].getAttributeNode("src").value = this.getAttribute("src");
+
+                };
+
+
+            }
+        };
+
+    $('#next').click(function(e) {
+        $('#next').hide();
+        console.log('currFile: ' + currFile + ', length: ' + fileObjs.length);
+        if (currFile < fileObjs.length) {
+
+            try{
+              while (!fileObjs[++currFile].validInput) {}
+            }catch(e){
+              console.log('WTF: '  + currFile);
+            }
+
+            $('#results').hide();
+
+            $('#urls').hide();
+            loadThumbs(fileObjs[currFile].key_str, fileObjs[currFile].duration);
+            $("#thumbpanel").slideDown("slow", function() {
+                //$("#collapse1").collapse("hide");
+            });
+            $('#collapse2').collapse('show');
+        }
+    });
+
+
+
+    $(".thumbnail").click(function(e) {
+
+        // increment a count variable and access the current fileObj using it
+
+
+        var imgurl = e.target.getAttributeNode("src").value,
+            imgurl256;
+
+        if (!imgChosen && !imgurl.startsWith("https://nrm.") && confirm("Are you sure you want to select this thumbnail? This action cannot be reversed.")) {
+            imgChosen = true;
+
+            var clickedIndex = parseInt(imgurl.split("").reverse()[4], 10) - 1,
+                delObjs = [];
+
+
+            for (var i = 0; i < 8; i++) {
+
+                delObjs.push({
+                    Key: fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Full_' + "0000" + (i + 1) + ".png"
+                });
+                delObjs.push({
+                    Key: fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Thumbnail_' + "0000" + (i + 1) + ".png"
+                });
+
+                if (i !== clickedIndex) {
+                    console.log("clickedIndex: " + clickedIndex);
+                    $(".thumbnail").get(i).getAttributeNode("style").value = "opacity: 0.4";
+
+                }
+            }
+            $(".thumbnail").get(clickedIndex).getAttributeNode("style").value = "opacity: 1";
+
+            //effectively rename the thumbnails to get rid of the thumbnail index suffix
+            var promises = [
+
+                new Promise(function(resolve, reject) {
+                    var src = '/<image-output-bucket-here>/' + fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Thumbnail_' + "0000" + (clickedIndex + 1) + ".png",
+                        target = fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Thumbnail.png';
+
+                    s3.copyObject({
+                        Bucket: '<image-output-bucket-here>',
+                        CopySource: src,
+                        Key: target
+                    }).
+                    on('success', function(r) {
+                        console.log(r);
+                        resolve();
+
+                    }).
+                    on('error', function(r) {
+                        console.log(r);
+                        resolve();
+                    }).
+                    send();
+                }),
+                new Promise(function(resolve, reject) {
+                    var src = '/<image-output-bucket-here>/' + fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Full_' + "0000" + (clickedIndex + 1) + ".png",
+                        target = fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Full.png';
+
+                    s3.copyObject({
+                        Bucket: '<image-output-bucket-here>',
+                        CopySource: src,
+                        Key: target
+                    }).
+                    on('success', function(r) {
+                        console.log(r);
+                        resolve();
+                    }).
+                    on('error', function(r) {
+                        console.log(r);
+                        resolve();
+                    }).
+                    send();
+                })
+
+
+            ];
+
+            Promise.all(promises).then(function() {
+
+                imgurl256 = "https://s3-us-west-1.amazonaws.com/<image-output-bucket-here>/" + fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Thumbnail.png';
+                imgurl = "https://s3-us-west-1.amazonaws.com/<image-output-bucket-here>/" + fileObjs[currFile].key_str + "_Output/" + fileObjs[currFile].trackingID + '_' + fileObjs[currFile].appName + '_2DImage_Full.png';
+
+                /*if (!fileObjs[currFile].keyExists) {
+                    var sheetUpdateReq = lambda.invoke({
+                        FunctionName: "Update_Spreadsheet",
+                        Payload: JSON.stringify({
+                            origName: fileObjs[currFile].keyField,
+                            dispName: fileObjs[currFile].thumbKey.split('_').join(' '),
+                            format: fileObjs[currFile].type.split('vid').join(''),
+                            conType: fileObjs[currFile].contType,
+                            fullThumb: imgurl,
+                            smallThumb: imgurl256,
+                            vid: fileObjs[currFile].cdn,
+                            id: parseInt(fileObjs[currFile].trackingID.substr(2), 10),
+                            trackingName: fileObjs[currFile].key_str,
+                            app: fileObjs[currFile].appName
+                        })
+                    });
+
+                    sheetUpdateReq.on('complete', function(updRes) {
+                        console.log(updRes);
+                    });
+
+                    sheetUpdateReq.send();
+                }*/
+
+                cells[9].innerHTML = "<a href=\"" + fileObjs[currFile].cdn + "\">" + fileObjs[currFile].cdn + "</a>";
+                //rows[5].getAttributeNode("onclick").value  = "window.document.location=\"" + imgurl + "\";";
+                cells[11].innerHTML = "<a href=\"" + imgurl + "\">" + imgurl + "</a>";
+                //rows[6].getAttributeNode("onclick").value  = "window.document.location=\"" + imgurl256 + "\";";
+                cells[13].innerHTML = "<a href=\"" + imgurl256 + "\">" + imgurl256 + "</a>";
+
+                $("#urls").slideDown("slow", function() {
+                    $("#collapse2").collapse("hide");
+                    if (currFile < fileObjs.length - 1) {
+                        $('#next').show();
+                    }
+                });
+
+                var delParams = {
+                        Bucket: "<image-output-bucket-here>",
+                        Delete: {
+                            Objects: delObjs
+                        }
+
+                    },
+
+                    delReq = s3.deleteObjects(delParams);
+                delReq.on('complete', function(delRes) {
+                    console.log(delRes);
+                });
+
+                delReq.send(function(err, data) {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+                fileObjs[currFile].appName = "";
+            });
+        }
+    });
+
+
+    dropZone.ondrop = function(e) {
+
+        if (e.preventDefault) e.preventDefault();
+        var files = e.dataTransfer.files; // files data
+        var n = files.length;
+        var totalSize = 0;
+        var fileList = "";
+
+        fileObjs = [];
+        uploadedCount = 0;
+        transcodedCount = 0;
+        currFile = -1;
+        allInputsValid = true;
+
+
+        for (i = 0; i < files.length; i++) {
+            fileList += "<span class='file'>" + files[i].name + "</span>";
+            totalSize += files[i].size;
+        }
+        var title = "<h1>" + n + " file" + (n > 1 ? 's' : '') + ", " + rnd(totalSize / 1e+6, 0) + " Mb</h1>";
+        document.getElementById("dropZone").innerHTML = title + fileList;
+
+        //console.log('testing log'); 
+        $("#menuVal").html("Choose an app");
+        document.getElementById('2dRad').checked = true;
+        document.getElementById('freeRad').checked = true;
+
+        setAll('type', '2Dvid');
+        setAll('appName', '');
+        setAll('trackingID', '');
+        setAll('contType', 'Free');
+
+
+        $('#next').hide();
+
+
+        $(".alert").hide();
+        $("#thumbpanel").hide();
+        $("#collapse1").collapse("show");
+
+        $("#results").hide();
+        $("#collapse2").collapse("show");
+
+
+        $("#urls").hide();
+        $("#collapse3").collapse("show");
+        $("#progress").show();
+
+        //instantiate new objects for each file in files
+        for (var i = 0; i < files.length; i++) {
+            fileObjs.push(new fileObj(files[i]));
+            if (!fileObjs[i].validInput) {
+                allInputsValid = false;
+            }
+        }
+
+
+
+
+
+
+
+        return false;
+    };
+
+    dropZone.ondragover = enableDragging;
+    dropZone.ondragenter = enableDragging;
+
+
+    $(".format").on("change", function(e) {
+        if (this.innerHTML.trim().endsWith("2D")) {
+            setAll('type', '2Dvid');
+        } else if (this.innerHTML.trim().endsWith("360")) {
+            setAll('type', '360vid');
+        }
+        //console.log(type);
+    });
+
+    $(".contType").on("change", function(e) {
+        if (this.innerHTML.trim().endsWith("Free")) {
+            setAll('contType', 'Free');
+        } else if (this.innerHTML.trim().endsWith("Premium")) {
+            setAll('contType', 'Premium');
+        }
+
+        //console.log(contType);
+    });
+
+    $(".dropdown-menu").on("click", function(e) {
+        application = e.target.innerHTML.split(" ").join("");
+        setAll('appName', application);
+        $("#invalid").hide();
+        $("#menuVal").html(e.target.innerHTML);
+        //console.log(e);
+
+    });
+
+
+    window.onbeforeunload = function (e) {
+      e = e || window.event;
+
+      // For IE and Firefox prior to version 4
+      if (e) {
+          e.returnValue = 'Sure?';
+      }
+
+      // For Safari
+      return 'Sure?';
+    };
+
+
+
+    submitB.onclick = function(e) {
+
+        
+        if(e.preventDefault)
+          e.preventDefault();
+
+        var doneCheckingKeys = true;
+
+        for (var i = 0; i < fileObjs.length; i++) {
+            if (!fileObjs[i].doneCheckingKey) {
+                doneCheckingKeys = false;
+                break;
+            }
+        }
+
+        //console.log(allInputsValid);
+        if (allInputsValid && doneCheckingKeys && fileObjs.length > 0 && application.length > 0) {
+
+            $("#jobstatus").html("Uploading 0%");
+            $("#menuVal").html(application);
+
+            $("#results").slideDown("slow");
+
+            $("#placeHolder").html("");
+
+            var keysArr = [],
+                currID = 0;
+
+            s3.listObjects({
+                Bucket: '<output-bucket-name-here>',
+                MaxKeys: 1000,
+                Prefix: 'ID'
+            }).
+            on('success', function handlePage(r) { // beginning of trackingID fetch callback
+                console.log(r);
+                //... handle page of contents r.data.Contents
+                keysArr = keysArr.concat(r.data.Contents);
+
+                if (r.hasNextPage()) {
+                    // There's another page; handle it
+                    r.nextPage().on('success', handlePage).send();
+                } else {
+                    console.log(keysArr);
+                    var currKey;
+                    for (var i in keysArr) {
+                        currKey = parseInt(keysArr[i].Key.substr(2, 4), 10);
+                        //console.log(currKey);
+                        if (currKey > currID) {
+                            currID = currKey;
+                        }
+                    }
+
+                    for (var j = 0; j < fileObjs.length; j++) {
+
+                        if (!fileObjs[j].keyExists || confirm('Warning! A video with the name "' + fileObjs[j].keyField + '" already exists. Do you want to overwrite the file?  The format and content type will not be overwritten.')) {
+
+                            console.log(fileObjs[j].keyExists);
+
+
+                            if (!fileObjs[j].keyExists) {
+
+                                fileObjs[j].trackingID = 'ID';
+                                if (currID + 1 < 9) {
+                                    fileObjs[j].trackingID += '0';
+                                }
+                                fileObjs[j].trackingID += (++currID);
+
+
+                                //trackingID = "ID31";
+
+                                console.log(' trackingID: ' + fileObjs[j].trackingID);
+                                console.log(' length: ' + currID);
+
+
+                                fileObjs[j].send();
+
+
+                            } else {
+                                fileObjs[j].overwrite();
+                            }
+
+                        } else {
+                            transcodedCount++;
+                            uploadedCount++;
+                            fileObjs[j].validInput = false;
+                        }
+                    }
+                } // end else (hasnextpage)
+                // end of callback for checking the highest tracking id
+
+            }).
+            on('error', function(r) {
+                console.log(r);
+            }).
+            send();
+        } else if (application.length === 0) {
+            $("#invmsg").html("Please choose an app.");
+            $("#invalid").slideDown("fast");
+        } else if (!allInputsValid) {
+            $("#invmsg").html("Invalid Input. Please make sure you have only .mp4 files selected.");
+            $("#invalid").slideDown("fast");
+        } else if (fileObjs.length === 0) {
+            $("#invmsg").html("No files selected.");
+            $("#invalid").slideDown("fast");
+        }
+    };
+
+
+  </script>  
+ </body>
+</html>
